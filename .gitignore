@@ -1,0 +1,8 @@
+*.log
+env
+venv
+.cache
+*.bck.json
+__pycache__
+oauth.json
+*.egg-info
