@@ -6,3 +6,4 @@ venv
 __pycache__
 oauth.json
 *.egg-info
+config.yaml

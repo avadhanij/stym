@@ -1,0 +1,5 @@
+CHECK_MARK = u'\u2705'
+CROSS_MARK = u'\u274c'
+LINE_MARKER = u'\u27A4'
+PLUS_MARK = u'\u2795'
+CLOCK = u'\u231B'

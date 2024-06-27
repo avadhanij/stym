@@ -1,18 +1,15 @@
 import spotipy
 import requests
 import functools
-import logging
 
+from spotoytm.symbols import *
 from ytmusicapi import YTMusic
 from spotipy.oauth2 import SpotifyClientCredentials
 from spotoytm.exception import SongNotAddedException, SongNotFoundException
 
-logger = logging.getLogger(__name__)
-
 
 class SpotifyToYouTubeMigrator:
-    """Class for managing credentials and migrating playlists from Spotify to YouTubeMusic
-    """
+    """Class for managing credentials and migrating playlists from Spotify to YouTubeMusic"""
 
     def __init__(self, playlist_config, oauth_file_loc):
         """Init method. Initialize Spotify and YouTubeMusic connection clients"""
@@ -30,29 +27,30 @@ class SpotifyToYouTubeMigrator:
             client_credentials_manager=client_credentials_manager
         )
 
-    def create_yt_playlist(self, playlist_title:str, playlist_description=None) -> str:
+        yt_playlists = self.yt_music.get_library_playlists()
+        self.yt_playlists = {playlist['title']: playlist['playlistId'] for playlist in yt_playlists}
+
+    def create_yt_playlist(self, playlist_title: str) -> str:
         """Wrapper method to create YouTubeMusic playlist. Skips creation if playlist of same title already exists."""
-        if playlist_description is None:
-            playlist_title = playlist_title
+        playlist_description = playlist_title
 
-        existing_playlists = self.yt_music.get_library_playlists()
-        for playlist in existing_playlists:
-            if playlist["title"] == playlist_title:
-                logger.info(f"The playlist {playlist_title} already exists")
-                return
+        playlist_id = self.yt_playlists.get(playlist_title)
+        if playlist_id is None:
+            playlist_id = self.yt_music.create_playlist(
+                title=playlist_title, description=playlist_description
+            )
+            print(LINE_MARKER + f" Created new YouTube playlist {playlist_title}" + CHECK_MARK)
+        else:
+            print(LINE_MARKER + f" The YouTube playlist {playlist_title} already exists")
 
-        return self.yt_music.create_playlist(
-            title=playlist_title, description=playlist_description
-        )
+        return playlist_id
 
     def add_to_yt_playlist(self, song_name: str, tgt_playlist: str):
-        """Method that searches for a given song and adds it to the given YT playlist.
-        """
-        search_results = self.yt_music.search(
-            song_name, "songs"
-        ) or self.yt_music.search(song_name, "videos")
+        """Method that searches for a given song and adds it to the given YT playlist."""
+        search_results = self.yt_music.search(song_name, "songs") or self.yt_music.search(
+            song_name, "videos"
+        )
         added = False
-
         if search_results:
             retries = 3
             while retries != 0:
@@ -63,42 +61,46 @@ class SpotifyToYouTubeMigrator:
                     retries = 0
                     added = True
                 except Exception as e:
-                    logger.error(f"An exception occurred: {e}")
                     retries -= 1
         else:
-            raise SongNotFoundException(song_name=song_name)
+            raise SongNotFoundException(song=song_name)
 
-        if not added:
-            raise SongNotAddedException(song_name=song_name, playlist=tgt_playlist)
+        if added is False:
+            raise SongNotAddedException(song=song_name, playlist=tgt_playlist)
 
     def get_spotify_playlist_tracks(self, playlist_id: str) -> list:
         """Method that retrieves all the tracks in a Spotify playlist"""
         track_list = []
 
+        playlist_info = self.spotify.user_playlist(user="", playlist_id=playlist_id)
+        print(LINE_MARKER + f" Retrieving songs from Spotify playlist titled {playlist_info['name']} " + CLOCK)
         results = self.spotify.user_playlist_tracks(user="", playlist_id=playlist_id)
 
-        tracks = results["items"]
-        while results["next"]:
+        tracks = results['items']
+        while results['next']:
             results = self.spotify.next(results)
-            tracks.extend(results["items"])
+            tracks.extend(results['items'])
 
         for track in tracks:
             try:
-                if track is None or track["track"] is None:
-                    print(track)
-                elif track["track"]["artists"] is None:
-                    print(track["track"])
-                    track_list.append(track["track"]["name"])
-                # In case there's only one artist, we add trackName - artist.
-                elif len(track["track"]["artists"]) == 1:
+                if track is None or track['track'] is None:
+                    print("Missing track information.")
+                # If artist info is missing, the song name is used as it's given
+                elif track['track']['artists'] is None:
+                    print(f"{track['track']} has no artist information")
+                    track_list.append(track['track']['name'])
+                # If there's only one artist, we add track_name - artist.
+                elif len(track['track']['artists']) == 1:
                     track_list.append(
-                        f"{track["track"]["name"]} - {track["track"]["artists"][0]["name"]}"
+                        f"{track['track']['name']} - {track['track']['artists'][0]['name']}"
                     )
-                # In case there's more than one artist, we create a comma separated string of artists
+                # If there's more than one artist, we create a comma separated string of artists
                 else:
-                    name_string = ", ".join(track["track"]["artists"])
-                    track_list.append(f"{track["track"]["name"]} - {name_string}")
+                    artists = [artist['name'] for artist in track['track']['artists']]
+                    name_string = ", ".join(artists)
+                    track_list.append(f"{track['track']['name']} - {name_string}")
             except Exception as e:
-                print("An exception occurred:", e)
+                print(e)
+                print(f"Error retrieving the information of {track} from Spotify " + CROSS_MARK)
 
         return track_list
