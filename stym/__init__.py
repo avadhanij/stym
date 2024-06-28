@@ -2,10 +2,10 @@ import spotipy
 import requests
 import functools
 
-from spotoytm.symbols import *
+from stym.symbols import *
 from ytmusicapi import YTMusic
 from spotipy.oauth2 import SpotifyClientCredentials
-from spotoytm.exception import SongNotAddedException, SongNotFoundException
+from stym.exception import SongNotAddedException, SongNotFoundException
 
 
 class SpotifyToYouTubeMigrator:

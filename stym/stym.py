@@ -6,9 +6,9 @@ import pexpect
 import time
 
 from yaml import CLoader as Loader
-from spotoytm.symbols import *
-from spotoytm import SpotifyToYouTubeMigrator
-from spotoytm.exception import (
+from stym.symbols import *
+from stym import SpotifyToYouTubeMigrator
+from stym.exception import (
     SongNotAddedException,
     SongNotFoundException
 )
@@ -78,11 +78,11 @@ def main() -> None:
         )
         return
 
-    stym = SpotifyToYouTubeMigrator(playlist_config, parsed_args.oauth_file)
+    migrator = SpotifyToYouTubeMigrator(playlist_config, parsed_args.oauth_file)
 
     for index, playlist_id in enumerate(spot_playlists):
         try:
-            tracks = stym.get_spotify_playlist_tracks(playlist_id)
+            tracks = migrator.get_spotify_playlist_tracks(playlist_id)
         except SpotifyException as e:
             print(e)
             print(LINE_MARKER + f" Error retrieving playlist {playlist_id} " + CROSS_MARK)
@@ -91,7 +91,7 @@ def main() -> None:
         print(LINE_MARKER + f" Retrieved Spotify playlist tracks " + CHECK_MARK)
 
         yt_playlist = yt_playlists[index]
-        yt_playlist_id = stym.create_yt_playlist(yt_playlist)
+        yt_playlist_id = migrator.create_yt_playlist(yt_playlist)
 
         print(
             LINE_MARKER
@@ -101,7 +101,7 @@ def main() -> None:
         for track in tracks:
             time.sleep(1)
             try:
-                stym.add_to_yt_playlist(track, yt_playlist_id)
+                migrator.add_to_yt_playlist(track, yt_playlist_id)
                 print(PLUS_MARK + f" Added {track} " + CHECK_MARK)
             except SongNotFoundException:
                 print(PLUS_MARK + f" Couldn't find {track} on YouTubeMusic " + CROSS_MARK)

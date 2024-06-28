@@ -7,4 +7,4 @@ develop:
 clean:
     rm -rf build
     rm -rf dist
-    rm -rf spotoytm.egg-info
+    rm -rf stym.egg-info
