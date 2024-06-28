@@ -17,6 +17,8 @@ or
 
 ## Spotify Credentials
 
+`stym` uses the Python library [spotipy](https://pypi.org/project/spotipy/) for interacting with Spotify's API.
+
 1. Navigate to the [Spotify developer dashboard](https://developer.spotify.com/dashboard/) and log into it using your Spotify credentials
 2. Create an application by clicking on Create app.
 3. Select WebAPI access checkbox. Redirect URI is not important and can be given any value.
