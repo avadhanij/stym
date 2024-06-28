@@ -2,23 +2,22 @@
 
 import yaml
 import argparse
-import logging
 import pexpect
 import time
 
 from yaml import CLoader as Loader
 from spotoytm.symbols import *
 from spotoytm import SpotifyToYouTubeMigrator
-from spotoytm.exception import SongNotAddedException, SongNotFoundException, SpotifyPlaylistError
+from spotoytm.exception import (
+    SongNotAddedException,
+    SongNotFoundException
+)
 from spotipy import SpotifyException
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 
 
 def parse_arguments() -> argparse.ArgumentParser:
     """Parse command line arguments.
-    
+
     Returns: Parsed arguments object
     """
     parser = argparse.ArgumentParser()
@@ -74,7 +73,9 @@ def main() -> None:
     spot_playlists = playlist_config["spotify"]["playlists"]
     yt_playlists = playlist_config["youtube"]["playlists"]
     if len(spot_playlists) != len(yt_playlists):
-        print("\nThe number of Spotify and YouTubeMusic playlists must match " + CROSS_MARK)
+        print(
+            "\nThe number of Spotify and YouTubeMusic playlists must match " + CROSS_MARK
+        )
         return
 
     stym = SpotifyToYouTubeMigrator(playlist_config, parsed_args.oauth_file)
@@ -92,12 +93,16 @@ def main() -> None:
         yt_playlist = yt_playlists[index]
         yt_playlist_id = stym.create_yt_playlist(yt_playlist)
 
-        print(LINE_MARKER + f" Adding tracks to YouTubeMusic playlist {yt_playlist} " + CLOCK)
+        print(
+            LINE_MARKER
+            + f" Adding tracks to YouTubeMusic playlist {yt_playlist} "
+            + CLOCK
+        )
         for track in tracks:
             time.sleep(1)
             try:
                 stym.add_to_yt_playlist(track, yt_playlist_id)
-                print(PLUS_MARK + f" Added {track} to playlist " + CHECK_MARK)
+                print(PLUS_MARK + f" Added {track} " + CHECK_MARK)
             except SongNotFoundException:
                 print(PLUS_MARK + f" Couldn't find {track} on YouTubeMusic " + CROSS_MARK)
                 songs_not_found.append(track)
@@ -105,16 +110,23 @@ def main() -> None:
                 print(PLUS_MARK + f" {track} could not be added " + CROSS_MARK)
                 songs_not_added.append((yt_playlist, track))
 
-        print(LINE_MARKER + f" Successfully migrated Spotify playlist {playlist_id} " + CHECK_MARK)
+        print(
+            LINE_MARKER
+            + f" Successfully migrated Spotify playlist {playlist_id} "
+            + CHECK_MARK
+        )
 
     if songs_not_found:
-        print(LINE_MARKER+ " The following song(s) couldn't be found on YouTubeMusic")
+        print(LINE_MARKER + " The following song(s) could not be found on YouTubeMusic")
         for song in songs_not_found:
             print(song)
 
     if songs_not_added:
-        print(LINE_MARKER + " The following song(s) couldn't be added to respective YouTubeMusic \
-              playlist(s)")
+        print(
+            LINE_MARKER
+            + " The following song(s) couldn't be added to respective YouTubeMusic \
+              playlist(s)"
+        )
         for playlist, song in songs_not_added:
             print(f"Playlist: {playlist} | Song: {song}")
 

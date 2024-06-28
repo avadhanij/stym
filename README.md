@@ -3,6 +3,16 @@
 # Motivation
 I wanted a command line based tool that would migrate my existing playlists from Spotify® to YouTubeMusic®.
 
+# Installation
+
+## PyPI
+
+`pip install stym`
+
+or
+
+`pipx install stym`
+
 # Setup
 
 ## Spotify Credentials
@@ -50,9 +60,9 @@ The random identifier right after `playlist/` is the playlist ID.
 
 # Usage
 
-## Step 1 - Authentication
+## Step 1 - Google Authentication
 
-This is a one time operation (needed again if credentials expire). 
+This is a one time operation (needed again if credentials expire) to authenticate with Google. 
 
 Invoke as follows
 

@@ -7,3 +7,6 @@ __pycache__
 oauth.json
 *.egg-info
 config.yaml
+.cache
+build/
+dist/

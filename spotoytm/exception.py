@@ -19,14 +19,3 @@ class SongNotAddedException(Exception):
 
     def __repr__(self) -> str:
         return f"Could not add the song {self.song_name} to the YT playlist {self.playlist_name}"
-
-
-class SpotifyPlaylistError(Exception):
-    """Exception class for not being able to get playlist songs"""
-
-    def __init__(self, *args: object, **kwargs) -> None:
-        self.playlist_name = kwargs["playlist_name"]
-        super().__init__(*args)
-
-    def __repr__(self) -> str:
-        return f"Could not find the playlist {self.playlist_name} in user's Spotify account"
